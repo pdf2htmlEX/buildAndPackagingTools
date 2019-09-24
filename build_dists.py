@@ -148,7 +148,7 @@ for cur_dist in supported_distributions:
 #        sys.exit(-1)
 
     # building for dpkg
-    if os.system('dpkg-buildpackage') != 0:
+    if os.system('dpkg-buildpackage -b --no-sign') != 0:
         print 'Failed in dpkg-buildpackage'
         sys.exit(-1)
 
