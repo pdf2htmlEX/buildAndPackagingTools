@@ -1,0 +1,13 @@
+diff --git a/poppler/Gfx.cc b/poppler/Gfx.cc
+index 8dc2dc93..1905e1e8 100644
+--- a/poppler/Gfx.cc
++++ b/poppler/Gfx.cc
+@@ -3893,6 +3893,8 @@ void Gfx::doShowText(const GooString *s) {
+   bool patternFill;
+   int len, n, uLen, nChars, nSpaces;
+ 
++printf("Gfx::doShowText gooStr: [%s]\n", s->toStr().c_str());
++
+   font = state->getFont();
+   wMode = font->getWMode();
+ 

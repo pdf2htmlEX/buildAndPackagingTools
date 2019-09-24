@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# This bash script scp's the deb archive from the remote machine
+
+scp -i $ANSIBLE_SSH_KEY $1 ubuntu@$AWS0_IP:.
+

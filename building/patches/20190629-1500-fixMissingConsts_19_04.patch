@@ -1,0 +1,48 @@
+diff --git a/src/HTMLRenderer/HTMLRenderer.h b/src/HTMLRenderer/HTMLRenderer.h
+index b0aee59..329f868 100644
+--- a/src/HTMLRenderer/HTMLRenderer.h
++++ b/src/HTMLRenderer/HTMLRenderer.h
+@@ -106,7 +106,7 @@ struct HTMLRenderer : OutputDev
+     // box is the crop box?
+     virtual bool needClipToCropBox() { return true; }
+ 
+-    virtual void setDefaultCTM(double *ctm);
++    virtual void setDefaultCTM(const double *ctm);
+ 
+     // Start a page.
+     virtual void startPage(int pageNum, GfxState *state, XRef * xref);
+@@ -171,7 +171,7 @@ struct HTMLRenderer : OutputDev
+     virtual void eoFill(GfxState *state);
+     virtual bool axialShadedFill(GfxState *state, GfxAxialShading *shading, double tMin, double tMax);
+ 
+-  virtual void beginTransparencyGroup(GfxState * /*state*/, double * /*bbox*/,
++  virtual void beginTransparencyGroup(GfxState * /*state*/, const double * /*bbox*/,
+                                       GfxColorSpace * /*blendingColorSpace*/,
+                                       bool /*isolated*/, bool /*knockout*/,
+                                       bool /*forSoftMask*/);
+diff --git a/src/HTMLRenderer/draw.cc b/src/HTMLRenderer/draw.cc
+index 65feb02..39cfa9c 100644
+--- a/src/HTMLRenderer/draw.cc
++++ b/src/HTMLRenderer/draw.cc
+@@ -62,7 +62,7 @@ bool HTMLRenderer::axialShadedFill(GfxState *state, GfxAxialShading *shading, do
+     return true;
+ }
+ 
+-void HTMLRenderer::beginTransparencyGroup(GfxState *state, double *bbox,
++void HTMLRenderer::beginTransparencyGroup(GfxState *state, const double *bbox,
+                                       GfxColorSpace *blendingColorSpace,
+                                       bool isolated, bool knockout,
+                                       bool forSoftMask) {
+diff --git a/src/HTMLRenderer/general.cc b/src/HTMLRenderer/general.cc
+index 2477a82..459e091 100644
+--- a/src/HTMLRenderer/general.cc
++++ b/src/HTMLRenderer/general.cc
+@@ -190,7 +190,7 @@ void HTMLRenderer::process(PDFDoc *doc)
+         cerr << endl;
+ }
+ 
+-void HTMLRenderer::setDefaultCTM(double *ctm)
++void HTMLRenderer::setDefaultCTM(const double *ctm)
+ {
+     memcpy(default_ctm, ctm, sizeof(default_ctm));
+ }

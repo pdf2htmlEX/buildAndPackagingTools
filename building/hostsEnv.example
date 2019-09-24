@@ -1,0 +1,15 @@
+# This is a bash script which when sourced sets the following environment 
+# variables
+#
+
+# Ensure the correct ip addresses are placed below for each running AWS EC2 
+# instance
+#
+export AWS0_IP=
+export AWS1_IP=
+export AWS2_IP=
+
+# Ensure the full path to your ubuntu AWS ssh (private rsa) key is placed 
+# below
+#
+export ANSIBLE_SSH_KEY=

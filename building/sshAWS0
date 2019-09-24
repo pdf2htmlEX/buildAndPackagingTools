@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# This bash script automates the login to a remote AWS machine
+
+if ssh-add -L | grep -q $ANSIBLE_SSH_KEY ; then
+  echo "already added $ANSIBLE_SSH_KEY"
+else
+  ssh-add $ANSIBLE_SSH_KEY
+fi
+
+ssh-keygen -R $AWS0_IP
+
+ssh -i $ANSIBLE_SSH_KEY ubuntu@$AWS0_IP

@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# This bash script automates the creation and testing of a pdf2htmlEX 
+
+echo mkdir $1
+mkdir $1
+
+echo pdf2htmlEX --zoom 1.3 --embed cfij --bg-format svg --split-pages 1 \
+  --dest-dir $1 --page-filename $1-%d.page $1.pdf 
+
+pdf2htmlEX --zoom 1.3 --embed cfij --bg-format svg --split-pages 1 \
+  --dest-dir $1 --page-filename $1-%d.page $1.pdf 
+
+echo sudo cp -R $1 /var/www/html/
+sudo cp -R $1 /var/www/html/
+
+echo ""
+echo ""
+pdf2htmlEX --version

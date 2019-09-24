@@ -1,0 +1,25 @@
+---
+
+# This "raw" playbook provisions an EC2 Instance for use as a temporary 
+# trial compile machine
+#
+# See: https://www.agix.com.au/build-an-ec2-using-ansible-step-by-step/
+# and: https://www.linuxschoolonline.com/use-ansible-to-build-and-manage-aws-ec2-instances/
+
+- import_playbook: basicBuildSetup.yml
+
+- name: Setup and install poppler and pdf2htmlEX repos for compilation
+  hosts: compileServers
+  remote_user: ubuntu
+  gather_facts: no
+  tasks:
+    - name: Install poppler git repo for compilation
+      git:
+        repo: https://gitlab.freedesktop.org/poppler/poppler.git
+        dest: /home/ubuntu/poppler
+        version: poppler-0.74.0
+    - name: Install pdf2htmlEX git repo for compilation
+      git:
+        repo: https://github.com/pdf2htmlEX/pdf2htmlEX.git
+        dest: /home/ubuntu/pdf2html
+

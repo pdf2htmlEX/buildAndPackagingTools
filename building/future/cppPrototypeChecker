@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+
+# This ruby script checks the consistency of virtual function prototypes 
+# across a class hierarchy.
+
+# It does this by walking over the out put of the:
+#    clang-check -ast-dump
+# command.
+
+astDump = IO.popen("clang-check -p build -ast-dump #{ARGV.join(' ')}")
+astDump.each_line do | aLine |
+  puts '>>>>'+aLine.gsub(/\e[^m]+m/,'')
+end
+

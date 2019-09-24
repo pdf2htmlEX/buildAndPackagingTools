@@ -1,0 +1,87 @@
+diff --git a/src/BackgroundRenderer/CairoBackgroundRenderer.cc b/src/BackgroundRenderer/CairoBackgroundRenderer.cc
+index 2c19a94..fac4904 100644
+--- a/src/BackgroundRenderer/CairoBackgroundRenderer.cc
++++ b/src/BackgroundRenderer/CairoBackgroundRenderer.cc
+@@ -81,7 +81,7 @@ void CairoBackgroundRenderer::beginTextObject(GfxState *state)
+     CairoOutputDev::beginTextObject(state);
+ }
+ 
+-void CairoBackgroundRenderer::beginString(GfxState *state, GooString * str)
++void CairoBackgroundRenderer::beginString(GfxState *state, const GooString * str)
+ {
+     if (param.proof == 2)
+         proof_begin_string(state, this);
+diff --git a/src/BackgroundRenderer/CairoBackgroundRenderer.h b/src/BackgroundRenderer/CairoBackgroundRenderer.h
+index e4e92d2..b354cdc 100644
+--- a/src/BackgroundRenderer/CairoBackgroundRenderer.h
++++ b/src/BackgroundRenderer/CairoBackgroundRenderer.h
+@@ -46,7 +46,7 @@ public:
+ 
+   //for proof
+   void beginTextObject(GfxState *state);
+-  void beginString(GfxState *state, GooString * str);
++  void beginString(GfxState *state, const GooString * str);
+   void endTextObject(GfxState *state);
+   void updateRender(GfxState *state);
+ 
+diff --git a/src/BackgroundRenderer/SplashBackgroundRenderer.cc b/src/BackgroundRenderer/SplashBackgroundRenderer.cc
+index 5ae289d..a7a23d8 100644
+--- a/src/BackgroundRenderer/SplashBackgroundRenderer.cc
++++ b/src/BackgroundRenderer/SplashBackgroundRenderer.cc
+@@ -80,7 +80,7 @@ void SplashBackgroundRenderer::beginTextObject(GfxState *state)
+     SplashOutputDev::beginTextObject(state);
+ }
+ 
+-void SplashBackgroundRenderer::beginString(GfxState *state, GooString * str)
++void SplashBackgroundRenderer::beginString(GfxState *state, const GooString * str)
+ {
+     if (param.proof == 2)
+         proof_begin_string(state, this);
+diff --git a/src/BackgroundRenderer/SplashBackgroundRenderer.h b/src/BackgroundRenderer/SplashBackgroundRenderer.h
+index 067de28..8b11da6 100644
+--- a/src/BackgroundRenderer/SplashBackgroundRenderer.h
++++ b/src/BackgroundRenderer/SplashBackgroundRenderer.h
+@@ -48,7 +48,7 @@ public:
+ 
+   //for proof
+   void beginTextObject(GfxState *state);
+-  void beginString(GfxState *state, GooString * str);
++  void beginString(GfxState *state, const GooString * str);
+   void endTextObject(GfxState *state);
+   void updateRender(GfxState *state);
+ 
+diff --git a/src/HTMLRenderer/HTMLRenderer.h b/src/HTMLRenderer/HTMLRenderer.h
+index d879e17..7ec04bf 100644
+--- a/src/HTMLRenderer/HTMLRenderer.h
++++ b/src/HTMLRenderer/HTMLRenderer.h
+@@ -126,7 +126,7 @@ struct HTMLRenderer : OutputDev
+     virtual void eoClip(GfxState * state);
+     virtual void clipToStrokePath(GfxState * state);
+     
+-    virtual void drawString(GfxState * state, GooString * s);
++    virtual void drawString(GfxState * state, const GooString * s);
+ 
+     virtual void drawImage(GfxState * state, Object * ref, Stream * str, int width, int height, GfxImageColorMap * colorMap, GBool interpolate, int *maskColors, GBool inlineImg);
+ 
+diff --git a/src/HTMLRenderer/text.cc b/src/HTMLRenderer/text.cc
+index 754c75b..16bb478 100644
+--- a/src/HTMLRenderer/text.cc
++++ b/src/HTMLRenderer/text.cc
+@@ -23,7 +23,7 @@ using std::none_of;
+ using std::cerr;
+ using std::endl;
+ 
+-void HTMLRenderer::drawString(GfxState * state, GooString * s)
++void HTMLRenderer::drawString(GfxState * state, const GooString * s)
+ {
+     if(s->getLength() == 0)
+         return;
+@@ -58,7 +58,7 @@ void HTMLRenderer::drawString(GfxState * state, GooString * s)
+ 
+     // Now ready to output
+     // get the unicodes
+-    char *p = s->getCString();
++    const char *p = s->getCString();
+     int len = s->getLength();
+ 
+     //accumulated displacement of chars in this string, in text object space

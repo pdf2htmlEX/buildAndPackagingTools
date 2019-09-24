@@ -1,0 +1,10 @@
+---
+
+# This "raw" playbook provisions an EC2 Instance for use as a temporary 
+# trial compile machine
+#
+# See: https://www.agix.com.au/build-an-ec2-using-ansible-step-by-step/
+# and: https://www.linuxschoolonline.com/use-ansible-to-build-and-manage-aws-ec2-instances/
+
+- import_playbook: basicTestSetup.yml
+

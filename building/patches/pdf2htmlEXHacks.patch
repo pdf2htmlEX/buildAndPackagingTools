@@ -1,0 +1,127 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 8a1cec4..a015fa1 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1,6 +1,7 @@
+ # leave this above project(pdf2htmlEX)
+ # set default build type to Release
+-set(CMAKE_BUILD_TYPE Release CACHE STRING "Build configuration (Debug, Release, RelWithDebInfo, MinSizeRel)")
++#set(CMAKE_BUILD_TYPE Release CACHE STRING "Build configuration (Debug, Release, RelWithDebInfo, MinSizeRel)")
++set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build configuration (Debug, Release, RelWithDebInfo, MinSizeRel)")
+ 
+ project(pdf2htmlEX)
+ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+diff --git a/src/CoveredTextDetector.cc b/src/CoveredTextDetector.cc
+index 0792c52..b12f4a6 100644
+--- a/src/CoveredTextDetector.cc
++++ b/src/CoveredTextDetector.cc
+@@ -10,7 +10,7 @@
+ #include <algorithm>
+ #include "util/math.h"
+ 
+-//#define DEBUG
++#define DEBUG
+ 
+ namespace pdf2htmlEX {
+ 
+diff --git a/src/HTMLRenderer/state.cc b/src/HTMLRenderer/state.cc
+index e6ae4bb..385c02d 100644
+--- a/src/HTMLRenderer/state.cc
++++ b/src/HTMLRenderer/state.cc
+@@ -167,6 +167,7 @@ void set_line_state(NewLineState & cur_ls, NewLineState new_ls)
+ 
+ void HTMLRenderer::check_state_change(GfxState * state)
+ {
++printf(">>>>>HTMLRenderer::check_state_change\n");
+     // DEPENDENCY WARNING
+     // don't adjust the order of state checking 
+     
+@@ -491,10 +492,12 @@ void HTMLRenderer::check_state_change(GfxState * state)
+     }
+ 
+     reset_state_change();
++printf("<<<<<HTMLRenderer::check_state_change\n");
+ }
+ 
+ void HTMLRenderer::prepare_text_line(GfxState * state)
+ {
++printf(">>>>>HTMLRenderer::prepare_text_line\n");
+     if(!(html_text_page.get_cur_line()))
+         new_line_state = NLS_NEWCLIP;
+ 
+@@ -537,6 +540,7 @@ void HTMLRenderer::prepare_text_line(GfxState * state)
+     {
+         html_text_page.get_cur_line()->append_state(cur_text_state);
+     }
++printf("<<<<<HTMLRenderer::prepare_text_line\n");
+ }
+ 
+ } //namespace pdf2htmlEX
+diff --git a/src/HTMLRenderer/text.cc b/src/HTMLRenderer/text.cc
+index 06df7aa..f06d42a 100644
+--- a/src/HTMLRenderer/text.cc
++++ b/src/HTMLRenderer/text.cc
+@@ -14,8 +14,8 @@
+ #include "util/namespace.h"
+ #include "util/unicode.h"
+ 
+-//#define HR_DEBUG(x)  (x)
+-#define HR_DEBUG(x)
++#define HR_DEBUG(x)  (x)
++//#define HR_DEBUG(x)
+ 
+ namespace pdf2htmlEX {
+ 
+@@ -25,6 +25,8 @@ using std::endl;
+ 
+ void HTMLRenderer::drawString(GfxState * state, const GooString * s)
+ {
++printf(">>>>>HTMLRenderer::drawString\n");
++    assert(s);
+     if(s->getLength() == 0)
+         return;
+ 
+@@ -35,9 +37,10 @@ void HTMLRenderer::drawString(GfxState * state, const GooString * s)
+ 
+         bool drawChars = true;
+ 
+-    // Writing mode fonts and Type 3 fonts are rendered as images
+-    // I don't find a way to display writing mode fonts in HTML except for one div for each character, which is too costly
+-    // For type 3 fonts, due to the font matrix, still it's hard to show it on HTML
++    // Writing mode fonts and Type 3 fonts are rendered as images I don't 
++    // find a way to display writing mode fonts in HTML except for one div 
++    // for each character, which is too costly For type 3 fonts, due to the 
++    // font matrix, still it's hard to show it on HTML
+ 
+ 
+     if(state->getFont()
+@@ -59,6 +62,8 @@ void HTMLRenderer::drawString(GfxState * state, const GooString * s)
+     // Now ready to output
+     // get the unicodes
+     const char *p = (s->toStr()).c_str();
++//printf("gooString: [%s]\n", s->toStr());
++std::cout << "gooString: [" << s->toStr() << "]\n";
+     int len = s->getLength();
+ 
+     //accumulated displacement of chars in this string, in text object space
+@@ -184,10 +189,12 @@ void HTMLRenderer::drawString(GfxState * state, const GooString * s)
+         
+     draw_tx += dx;
+     draw_ty += dy;
++printf("<<<<<HTMLRenderer::drawString drawChars: %d\n", drawChars); //return;
+ }
+ 
+ bool HTMLRenderer::is_char_covered(int index)
+ {
++printf(">>>>>HTMLRenderer::is_char_covered\n");
+     auto covered = covered_text_detector.get_chars_covered();
+     if (index < 0 || index >= (int)covered.size())
+     {
+@@ -195,6 +202,7 @@ bool HTMLRenderer::is_char_covered(int index)
+                 << index << ", size: " << covered.size() <<endl;
+         return true;  // Something's gone wrong so assume covered so at least something is output
+     }
++printf("<<<<<HTMLRenderer::is_char_covered\n");
+     return covered[index];
+ }
+ 

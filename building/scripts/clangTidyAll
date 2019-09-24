@@ -1,0 +1,81 @@
+#!/usr/bin/env ruby
+
+# This ruby script reads a build compile_commands.json file and runs 
+# clang-tidy against each build artefact.
+
+# The resulting output is placed in individual log files in the 
+# build/clangTidyAll directory.
+
+# See: [Clang-Tidy](https://clang.llvm.org/extra/clang-tidy/)
+
+require 'fileutils'
+require 'json'
+require 'pp'
+
+baseDir = Dir.getwd
+baseRegExp = Regexp.new('^'+baseDir+'/')
+
+buildDir = 'build'
+if not File.directory?(buildDir) then
+  puts "NO build directory found"
+  exit(-1)
+end
+
+compileCMDSfile = buildDir+'/compile_commands.json'
+if not File.exists?(compileCMDSfile) then
+  puts "NO build/compile_commands.json file found"
+  exit(-1)
+end
+
+compileFiles = Array.new
+compileCMDS = JSON.parse(File.read(compileCMDSfile))
+compileCMDS.each do | aCompileCMD |
+  compileFiles.push aCompileCMD['file']
+end
+compileFiles.sort!
+
+checkList = ""
+checkList = ARGV[0] unless ARGV.length < 1
+
+if checkList =~ /-help/ then
+  puts "Usage: clangTidyAll <<clang-tidy checks>>"
+  exit(0)
+end
+
+checkList = 'cert-*' if checkList.empty?
+puts "using checkList: [#{checkList}]"
+checkList = '-checks='+checkList
+
+$warningTypes = Hash.new
+
+def recordAWarningIn(aWarningType, aFile)
+  puts '  '+aWarningType
+  $warningTypes[aWarningType] = $warningTypes[aWarningType] || Hash.new
+  $warningTypes[aWarningType][aFile] = true
+end
+
+compileFiles.each do | aFile |
+  aFile.gsub!(baseRegExp, '')
+  puts "\nWorking on: [#{aFile}]"
+  outputFile = 'build/clangTidy/'+aFile+'.log'
+  outputPath = File.dirname(outputFile)
+  FileUtils.mkdir_p(outputPath)
+  system("( clang-tidy -p build #{checkList} -header-filter=.* #{aFile} 2>&1 ) > #{outputFile}")
+  IO.readlines(outputFile).each do | aLine |
+    if aLine =~ /\[(clang[^\]]*)\]/ then
+      recordAWarningIn(Regexp.last_match(1), aFile)
+    elsif aLine =~ /\[(cert[^\]]*)\]/ then
+      recordAWarningIn(Regexp.last_match(1), aFile)
+    end
+  end
+end
+
+puts "\n-----------------\n\n"
+
+puts "Warnings found:"
+$warningTypes.keys.sort.each do | aWarningType |
+  puts '  '+aWarningType+':'
+  $warningTypes[aWarningType].keys.sort.each do | aFile |
+    puts '    '+aFile
+  end
+end
