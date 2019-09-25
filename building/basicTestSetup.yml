@@ -29,8 +29,21 @@
         state: latest
         update_cache: yes
         name:
+          # basic tools
+          - tree
           - aptitude
           - nginx
+          # basic build tools
+          - git
+          - pkg-config
+          - cmake
+          - make
+          - gcc
+          - g++
+          - equivs # to build a fake poppler package
+          # packages required to compile poppler
+          - libfontforge-dev
+          - libfontconf-dev
     - name: copy test scripts
       copy:
         src: awsEC2/scripts/

@@ -31,7 +31,6 @@
         name:
           - aptitude
           - git
-          - libpoppler-private-dev
           - pkg-config
           - ruby
           - cmake
@@ -46,10 +45,12 @@
           - libspiro-dev
           - libpng-dev
           - libjpeg-dev
-          - libpoppler-dev
+          #- libpoppler-dev
+          #- libpoppler-private-dev # header files
           - libpango1.0-dev
           - libfontforge-dev
           - poppler-data
+          - liblcms2-dev
           - openjdk-8-jre-headless  # required for minimization of javascript
           #- openjdk-11-jre-headless  # required for minimization of javascript
           - nginx                    # helps view the result pdf2html 
