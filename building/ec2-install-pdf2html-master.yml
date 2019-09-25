@@ -1,10 +1,12 @@
 ---
 
 # This "raw" playbook provisions an EC2 Instance for use as a temporary 
-# trial compile machine
+# trial compile machine which can also build the *.deb archive for the 
+# distribution of a given pdf2htmlEX release.
 #
-# See: https://www.agix.com.au/build-an-ec2-using-ansible-step-by-step/
-# and: https://www.linuxschoolonline.com/use-ansible-to-build-and-manage-aws-ec2-instances/
+# We use the pdf2htmlEX/pdf2htmlEX sources from the HEAD of the *master* 
+# branch
+#
 
 - import_playbook: basicBuildSetup.yml
 
@@ -22,4 +24,20 @@
       git:
         repo: https://github.com/pdf2htmlEX/pdf2htmlEX.git
         dest: /home/ubuntu/pdf2html
+    - name: Install pdf2htmlEX packaging tools
+      git:
+        repo: https://github.com/pdf2htmlEX/buildAndPackagingTools
+        dest: /home/ubuntu/pdf2html-buildAndPackagingTools
+    - name: copy build_dists.py
+      copy:
+        src: /home/ubuntu/pdf2html-buildAndPackagingTools/packaging/build_dists.py
+        remote_src: yes
+        dest: /home/ubuntu/pdf2html/build_dists.py
+        mode: preserve
+    - name: copy debian directory
+      copy:
+        src: /home/ubuntu/pdf2html-buildAndPackagingTools/packaging/debian
+        remote_src: yes
+        dest: /home/ubuntu/pdf2html
+
 

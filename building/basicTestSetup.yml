@@ -33,10 +33,10 @@
           - nginx
     - name: copy test scripts
       copy:
-        src: scripts/
+        src: awsEC2/scripts/
         dest: .
         mode: a+x
     - name: copy simple test PDF files
       copy:
-        src: files/
+        src: awsEC2/files/
         dest: .

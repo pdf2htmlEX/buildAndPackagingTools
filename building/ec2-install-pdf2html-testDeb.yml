@@ -1,10 +1,18 @@
 ---
 
 # This "raw" playbook provisions an EC2 Instance for use as a temporary 
-# trial compile machine
+# trial installation machine.
 #
-# See: https://www.agix.com.au/build-an-ec2-using-ansible-step-by-step/
-# and: https://www.linuxschoolonline.com/use-ansible-to-build-and-manage-aws-ec2-instances/
+# NO pdf2htmlEX sources are git cloned onto this machine. This means that 
+# this machine knows nothing about pdf2htmlEX.
+#
+# This means we can use this machine to cleanly install a particluar 
+# pdf2htmlEX *.deb release archive.
+#
+# Use the appropriate pushDebX to push a pdf2htmlEX *.deb release archive 
+# to this machine, and then follow the instructions for installation using 
+# apt to test the installation.
+#
 
 - import_playbook: basicTestSetup.yml
 

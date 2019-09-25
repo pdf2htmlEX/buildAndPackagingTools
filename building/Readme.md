@@ -2,9 +2,9 @@
 
 This Ansible project contains the information required to commission and 
 setup a bare standard Ubuntu instance.  This allows me to create a new bare 
-standard instance in order to test compile packages on a know base system, 
-and will help to explicilty determine what dependencies are required for a 
-given project.
+standard instance in order to test compile the pdef2htmlEX package on a 
+know base system, and will help to explicilty determine what dependencies 
+are required for pdf2htmlEX.
 
 ## Setup
 
@@ -13,12 +13,12 @@ instance:
 
   https://cloud-images.ubuntu.com/locator/ec2/
 
-THEN edit the file `hostsEnv` to ensure the aws0, aws1, and/or aws2 are 
+THEN edit the file `hostEnvs` to ensure the aws0, aws1, and/or aws2 are 
 associated with the correct *public* ip address
 
-THEN each time you change the `hostsEnv` file you need to type:
+THEN each time you change the `hostEnvs` file you need to type:
 
-  source ./hostsEnv
+  source ./hostEnvs
 
 in each terminal you are using.
 

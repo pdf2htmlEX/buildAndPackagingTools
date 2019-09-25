@@ -1,10 +1,15 @@
 ---
 
 # This "raw" playbook provisions an EC2 Instance for use as a temporary 
-# trial compile machine
+# trial compile machine. This is useful for test compiling updates to 
+# pdf2htmlEX while it is in development.
 #
-# See: https://www.agix.com.au/build-an-ec2-using-ansible-step-by-step/
-# and: https://www.linuxschoolonline.com/use-ansible-to-build-and-manage-aws-ec2-instances/
+# This playbook uses the *stephengaito/pdf2htmlEX* sources from the HEAD of 
+# the *master* branch.
+#
+# To use another *developmental* fork of pdf2htmlEX, make a *copy* of this 
+# playbook and make the appropriate changes.
+#
 
 - import_playbook: basicBuildSetup.yml
 
