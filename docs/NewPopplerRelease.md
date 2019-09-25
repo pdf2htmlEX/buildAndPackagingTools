@@ -74,4 +74,160 @@ We do this by renaming them:
 
 Unfortunately, the six files you have just copied from the poppler sources, 
 all `#include <config.h>`. These must be changed to `#include 
-<poppler-config.h>`.
+<poppler-config.h>`. The actual `poppler-config.h` file will be created by
+the poppler build system when you (re)compile poppler. (Alternatively, it 
+can be found in the `libpopper-private-dev` debian package if you are using
+the `libpoppler` package which comes with a Debian/Ubuntu release).
+
+### Testing the build of pdf2htmlEX
+
+Unfortunately, even if the six `Cairo*` files listed above have not changed,
+other files in the poppler libraries might have changed...
+
+This means that the only way to know that the current pdf2htmlEX sources will
+compile with a given poppler version is to create an AWS EC2 instance
+and test compile/install both the newer version of poppler as well as the 
+associated version of pdf2htmlEX.
+
+To do this you can follow the instructions contained in the
+[building/Readme](../building/Readme.md).
+
+Once you have an AWS EC2 instance running and configured with one of the
+[ec2-install-pdf2html-develop-XXX.yml](../building/ec2-install-pdf2html-develop-stg.yml)
+Ansible playbooks, log into your server via ssh and then type:
+
+    ./dobuildPoppler
+    ./doinstallPoppler
+    cd pdf2html
+    ./dobuild
+
+And then look at the error messages... (easy eh?)
+
+(**NOTE** before running one of the playbooks, you need to make sure
+that all of the correct poppler and pdf2htmlEX versions are correctly
+recorded in the playbook you plan to use.)
+
+### Hacking the pdf2htmlEX sources
+
+Once you have compilation error messages, you can hack the pdf2htmlEX 
+source code on the AWS EC2 machine until you get it to compile...
+
+### Getting the changes back to your working repository
+
+While you do have a clone of your development pdf2htmlEX git repository,
+getting any changes back to your main working machine takes some care.
+Since the AWS EC2 test-compile machine is not very secure, you **do not**
+want to place your GitHub keys on the test-compile machine.
+
+To transfer any changes I have made to the pdf2htmlEX source code
+I do a `git diff > patchFile` to create a patch file which I then
+pull back from the AWS EC2 machine to where my working repository is.
+I can then use the `splitpatch patchFile` tool to split the patchFile
+into patches for each individual file, review the changes and then 
+apply them (if needed) to the files using the `patch` tool.
+
+### Going round the loop
+
+The process of getting stable changes to the pdf2htmlEX source code
+*will* take a number of iterations, many of which will include the
+creation of fresh new clean AWS EC2 machines with the current best
+working version of the pdf2htmlEX source code.
+
+### Once you have compiling code
+
+Once you have code that compiles it is now time to test pdf2htmlEX
+with some pdf's. To do this type:
+
+    cd
+    pdf2htmlTest testrevelatornl
+    pdf2htmlTest joyLoL
+
+If these both work without errors, you can then view the resulting
+html using your local browser by typing:
+
+    openHTML0
+
+on your local machine.
+
+The `testrevelatornl.pdf` file is a very simple single paragraph of
+text. The `joyLoL.pdf` file is a very much more complex document with
+a table of contents, citation links to the bibliography, as well as
+a number of SVG based box diagrams (which include embedded text which
+*should* be selectable).
+
+If this all works then you can progress to the creation of a Debian package.
+
+If something fails.... you need to go around to loop a couple more times.
+
+### Creating a Debian package.
+
+Once you have working pdf2htmlEX code, you need to issue a pull request
+on the pdf2htmlEX/phd2htmlEX repository to get your code into the master
+repository.
+
+Once your changes have been accepted, you need to build a Debian package.
+To do this you need to create an new fresh clean AWS EC2 machine with the 
+source code from the *master* pdf2htmlEX repository.
+
+To do this you can follow the instructions contained in the
+[building/Readme](../building/Readme.md).
+
+Once you have an AWS EC2 instance running and configured with one of the
+[ec2-install-pdf2html-master.yml](../building/ec2-install-pdf2html-master.yml)
+Ansible playbooks, log into your server via ssh and then type:
+    
+    ./dobuildPoppler
+    ./doinstallPoppler
+    cd pdf2html
+    ./build_dist.py
+
+This will ask you to fill in the changeslog file using an editor of your
+choice. It will then go on and build the Debian package.
+
+You can use the `getDeb0 <<debian package file name>>` command to pull
+the debian package archive back to your working machine putting it in the
+`tmp` directory. The `getDeb0` tool will also create `md4sum` and `sha256sum`
+files which contain `md5sum` and `sha256sum` fingerprints of the debian
+archive. (All in the `tmp` directory).
+
+### Testing a debian archive
+
+Once you have a debian archive you need to test *it* to make sure
+your installation instructions work as written (and there are no
+hidden dependencies). Agian, we need to do this on a fresh clean
+AWS EC2.
+
+To do this you can follow the instructions contained in the
+[building/Readme](../building/Readme.md).
+
+Once you have an AWS EC2 instance running and configured with one of the
+[ec2-install-pdf2html-testDeb.yml](../building/ec2-install-pdf2html-testDeb.yml)
+Ansible playbooks, log into your server once via ssh and then in a new terminal
+on your local machine type:
+
+     pushDeb0 <<path to your debian package>>
+     
+Then back on your new AWS EC2 machine type:
+
+    cd
+    sudo apt install ./<<debian package name>>
+
+(note the `./` is *required* for apt to install from a *local* package).
+
+You can then test the pdf2htlmEX you have just installed using the commands:
+
+    cd
+    pdf2htmlTest testrevelatornl
+    pdf2htmlTest joyLoL
+
+as above. As above you can use the:
+
+    openHTML0
+
+on your local machine to view the resulting html files.
+
+If all goes well you can then release the code....
+
+### Releasing a new pdf2htmlEX version
+
+TBD ;-(
