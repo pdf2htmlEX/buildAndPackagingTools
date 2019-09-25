@@ -8,11 +8,11 @@ either:
 
 * [cgit](http://cgit.freedesktop.org/poppler/poppler)
 
-      `git clone https://anongit.freedesktop.org/git/poppler/poppler.git`
+      git clone https://anongit.freedesktop.org/git/poppler/poppler.git
 
 * [gitLab](https://gitlab.freedesktop.org/poppler/poppler)
 
-      `git clone https://gitlab.freedesktop.org/poppler/poppler.git`
+      git clone https://gitlab.freedesktop.org/poppler/poppler.git
 
 ### Copy 3rdparty/poppler/git files
 
@@ -56,7 +56,7 @@ To copy them into place type:
 ### Review changes
 
 At this point it is important to move to the pdf2htmlEX development 
-repositry and review the `git diff` to see what has changed between the 
+repository and review the `git diff` to see what has changed between the 
 last and current poppler releases. (This will hint what problems you might 
 have compiling pdf2htmlEX).
 
