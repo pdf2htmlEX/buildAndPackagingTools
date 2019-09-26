@@ -26,7 +26,7 @@ We tag/release these files in sync with the pdf2htmlEX/pdf2htmlEX releases
        collection of steps use to bring pdf2htmlEX sources up to date with 
        a new [poppler](https://poppler.freedesktop.org/) release.
 
-     * [TipsAndTricks](docs/TipsAndTricks.md) contains ideas which have 
+     * [TipsAndTricks](docs/TipsAndTricks/Readme.md) contains ideas which have 
        been useful in the past for identifying how changes to poppler 
        might impact pdf2htmlEX.
 
