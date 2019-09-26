@@ -235,6 +235,9 @@ on your local machine type:
 Then back on your new AWS EC2 machine type:
 
     cd
+    ./dobuildPoppler
+    ./doinstallPoppler
+    
     sudo apt install ./<<debian package name>>
 
 (note the `./` is *required* for apt to install from a *local* package).
@@ -255,4 +258,34 @@ If all goes well you can then release the code....
 
 ### Releasing a new pdf2htmlEX version
 
-TBD ;-(
+If you have release permissions, go the the pdf2htmlEX
+[releases](https://github.com/pdf2htmlEX/pdf2htmlEX/releases)
+page and click on the "Draft new release" button.
+
+Choose an appropriate release/tag name. To make it simple
+for all users, please ensure the release/tag name *begins* 
+with a `v` is then followed by the pdf2htmlEX version being 
+released (as recorded in line 13 of the
+[CMakeLists.txt](https://github.com/pdf2htmlEX/pdf2htmlEX/blob/master/CMakeLists.txt)
+file) which is then followed by `-poppler-` and the poppler
+version used to build this version of pdf2htmlEX.
+
+A typical release/tag should look like:
+
+    v0.18.1-poppler-0.75.0
+
+Then in provide a description of what this new release
+contains. You might also include some simple installation
+instructions.
+
+You should also upload any associated Debian package archives
+you created in the previous steps, along with their associated
+md5 and sha256 check sum fingerprints.
+
+Finally, when all of the release information is correct, click
+on the "Publish release" button.
+
+### You are now done!
+
+Relax :-)
+
