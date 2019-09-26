@@ -1,3 +1,9 @@
+pdf2htmlex (0.18.2-1~git20190926ra37f7-0ubuntu1) disco; urgency=low
+
+  * Package for poppler-0.76.0
+
+ -- Stephen Gaito <stephen@perceptisys.co.uk>  Thu, 26 Sep 2019 15:29:27 +0000
+
 pdf2htmlex (0.18.1-1~git20190926r11e2a-0ubuntu1) disco; urgency=low
 
   * Package for poppler-0.75.0

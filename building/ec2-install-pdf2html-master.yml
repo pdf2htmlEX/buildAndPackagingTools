@@ -19,7 +19,7 @@
       git:
         repo: https://gitlab.freedesktop.org/poppler/poppler.git
         dest: /home/ubuntu/poppler
-        version: poppler-0.75.0
+        version: poppler-0.77.0
     - name: Install pdf2htmlEX git repo for compilation
       git:
         repo: https://github.com/pdf2htmlEX/pdf2htmlEX.git
