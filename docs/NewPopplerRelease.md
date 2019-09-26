@@ -199,11 +199,15 @@ ansible playbook, log into your server via ssh and then type:
     
     ./dobuildPoppler
     ./doinstallPoppler
+    
+    equivs-build libpoppler-dev
+    sudo apt install ./libpoppler-dev_1.0_all.deb
+    
     cd pdf2html
     ./build_dist.py
 
-This will ask you to fill in the changeslog file using an editor of your
-choice. It will then go on and build the Debian package.
+The `build_dist.py` script will ask you to fill in the changeslog file
+using an editor of your choice. It will then go on and build the Debian package.
 
 You can use the `getDeb0 <<debian package file name>>` command to pull
 the debian package archive back to your working machine putting it in the
