@@ -8,7 +8,7 @@ scp -i $ANSIBLE_SSH_KEY ubuntu@$AWS1_IP:build-area/$1 tmp
 
 scp -i $ANSIBLE_SSH_KEY                                                   \
   ubuntu@$AWS1_IP:pdf2html/debian/changelog                               \
-  $HOME/GitTools/code/external/pdf2htmlEX-packagingTools/debian/changelog
+  ../packaging/debian/changelog
 
 cd tmp
 

@@ -41,6 +41,7 @@
           #- clang++ in clang package
           - clang-tidy
           #- clang-tools
+          - equivs # to build a fake poppler package
           - libcairo-dev
           - libspiro-dev
           - libpng-dev
