@@ -43,7 +43,7 @@
           - equivs # to build a fake poppler package
           # packages required to compile poppler
           - libfontforge-dev
-          - libfontconf-dev
+          - libfontconfig-dev
     - name: copy test scripts
       copy:
         src: awsEC2/scripts/
