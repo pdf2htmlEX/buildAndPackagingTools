@@ -94,7 +94,7 @@ To do this you can follow the instructions contained in the
 
 Once you have an AWS EC2 instance running and configured with one of the
 [ec2-install-pdf2html-develop-XXX.yml](../building/ec2-install-pdf2html-develop-stg.yml)
-Ansible playbooks, log into your server via ssh and then type:
+ansible playbooks, log into your server via ssh and then type:
 
     ./dobuildPoppler
     ./doinstallPoppler
@@ -166,7 +166,28 @@ on the pdf2htmlEX/phd2htmlEX repository to get your code into the master
 repository.
 
 Once your changes have been accepted, you need to build a Debian package.
-To do this you need to create an new fresh clean AWS EC2 machine with the 
+
+**Before you begin** you *must* update the pdf2htmlEX version number in the
+[CMakeLists.txt](https://github.com/pdf2htmlEX/pdf2htmlEX/blob/master/CMakeLists.txt)
+file in the master pdf2htmlEX repository. You need to update line 13:
+
+    set(PDF2HTMLEX_VERSION "0.18.0")
+
+At the moment we are essentially using a [Semantic Versioning](https://semver.org/) system:
+* We are using the *Major* versions for substantial changes to pdf2htmlEX.
+* We are using the *Minor* versions to reflect changes in the underlying
+  Ubuntu/Debian releases.
+* We are using the *Patch* versions to reflect changes in the poppler releases
+  which might have happened *between* Ubuntu/Debian releases.
+
+**Before you begin** you *must* also update the name of the ubuntu release in the
+[build_dists.py](https://github.com/pdf2htmlEX/buildAndPackagingTools/blob/master/packaging/build_dists.py)
+file in the pdf2htmlEX-buildAndPackagingTools repository. You need to update line 22:
+
+    supported_distributions=('disco',)
+
+Once you have updated these two version variables, you will then need
+to create an new fresh clean AWS EC2 machine with the 
 source code from the *master* pdf2htmlEX repository.
 
 To do this you can follow the instructions contained in the
@@ -174,7 +195,7 @@ To do this you can follow the instructions contained in the
 
 Once you have an AWS EC2 instance running and configured with one of the
 [ec2-install-pdf2html-master.yml](../building/ec2-install-pdf2html-master.yml)
-Ansible playbooks, log into your server via ssh and then type:
+ansible playbook, log into your server via ssh and then type:
     
     ./dobuildPoppler
     ./doinstallPoppler
@@ -202,7 +223,7 @@ To do this you can follow the instructions contained in the
 
 Once you have an AWS EC2 instance running and configured with one of the
 [ec2-install-pdf2html-testDeb.yml](../building/ec2-install-pdf2html-testDeb.yml)
-Ansible playbooks, log into your server once via ssh and then in a new terminal
+ansible playbook, log into your server once via ssh and then in a new terminal
 on your local machine type:
 
      pushDeb0 <<path to your debian package>>
