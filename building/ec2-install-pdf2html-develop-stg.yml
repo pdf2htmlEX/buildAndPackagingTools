@@ -22,9 +22,24 @@
       git:
         repo: https://gitlab.freedesktop.org/poppler/poppler.git
         dest: /home/ubuntu/poppler
-        version: poppler-0.75.0
+        version: poppler-0.76.0
     - name: Install pdf2htmlEX git repo for compilation
       git:
         repo: https://github.com/stephengaito/pdf2htmlEX.git
+        dest: /home/ubuntu/pdf2html
+    - name: Install pdf2htmlEX packaging tools
+      git:
+        repo: https://github.com/pdf2htmlEX/buildAndPackagingTools
+        dest: /home/ubuntu/pdf2html-buildAndPackagingTools
+    - name: copy build_dists.py
+      copy:
+        src: /home/ubuntu/pdf2html-buildAndPackagingTools/packaging/build_dists.py
+        remote_src: yes
+        dest: /home/ubuntu/pdf2html/build_dists.py
+        mode: preserve
+    - name: copy debian directory
+      copy:
+        src: /home/ubuntu/pdf2html-buildAndPackagingTools/packaging/debian
+        remote_src: yes
         dest: /home/ubuntu/pdf2html
 

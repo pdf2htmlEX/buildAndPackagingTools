@@ -1,0 +1,70 @@
+diff --git a/src/HTMLRenderer/HTMLRenderer.h b/src/HTMLRenderer/HTMLRenderer.h
+index 329f868..a1195e8 100644
+--- a/src/HTMLRenderer/HTMLRenderer.h
++++ b/src/HTMLRenderer/HTMLRenderer.h
+@@ -16,6 +16,7 @@
+ #include <GfxState.h>
+ #include <Stream.h>
+ #include <PDFDoc.h>
++#include <Outline.h>
+ 
+ /************ from goo/gtypes.h ***************/
+ // #include <goo/gtypes.h>
+@@ -197,7 +198,7 @@ protected:
+     void post_process(void);
+ 
+     void process_outline(void);
+-    void process_outline_items(const GooList * items);
++    void process_outline_items(const std::vector<OutlineItem*> * items);
+ 
+     void process_form(std::ofstream & out);
+     
+diff --git a/src/HTMLRenderer/link.cc b/src/HTMLRenderer/link.cc
+index 9f3a62d..842b6de 100644
+--- a/src/HTMLRenderer/link.cc
++++ b/src/HTMLRenderer/link.cc
+@@ -40,7 +40,7 @@ static string get_linkdest_detail_str(LinkDest * dest, Catalog * catalog, int &
+     if(dest->isPageRef())
+     {
+         auto pageref = dest->getPageRef();
+-        pageno = catalog->findPage(pageref.num, pageref.gen);
++        pageno = catalog->findPage(pageref);
+     }
+     else
+     {
+diff --git a/src/HTMLRenderer/outline.cc b/src/HTMLRenderer/outline.cc
+index 205eac7..d5848c5 100644
+--- a/src/HTMLRenderer/outline.cc
++++ b/src/HTMLRenderer/outline.cc
+@@ -9,8 +9,8 @@
+ 
+ #include <iostream>
+ 
+-#include <Outline.h>
+-#include <goo/GooList.h>
++//#include <Outline.h>
++//#include <goo/GooList.h>
+ 
+ #include "HTMLRenderer.h"
+ #include "util/namespace.h"
+@@ -21,16 +21,16 @@ namespace pdf2htmlEX {
+ 
+ using std::ostream;
+ 
+-void HTMLRenderer::process_outline_items(const GooList * items)
++void HTMLRenderer::process_outline_items(const std::vector<OutlineItem*> * items)
+ {
+-    if((!items) || (items->getLength() == 0))
++    if((!items) || (items->size() == 0))
+         return;
+ 
+     f_outline.fs << "<ul>";
+ 
+-    for(int i = 0; i < items->getLength(); ++i)
++    for(std::size_t i = 0; i < items->size(); ++i)
+     {
+-        OutlineItem * item = (OutlineItem*)(items->get(i));
++        OutlineItem * item = items->at(i);
+ 
+         string detail;
+         string dest = get_linkaction_str(item->getAction(), detail);
