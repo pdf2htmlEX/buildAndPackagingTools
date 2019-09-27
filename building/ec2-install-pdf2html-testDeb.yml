@@ -25,5 +25,5 @@
       git:
         repo: https://gitlab.freedesktop.org/poppler/poppler.git
         dest: /home/ubuntu/poppler
-        version: poppler-0.79.0
+        version: poppler-0.80.0
 
