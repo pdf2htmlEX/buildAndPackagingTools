@@ -112,6 +112,12 @@ recorded in the playbook you plan to use.)
 Once you have compilation error messages, you can hack the pdf2htmlEX 
 source code on the AWS EC2 machine until you get it to compile...
 
+The
+[`TipsAndTricks`](https://github.com/pdf2htmlEX/buildAndPackagingTools/tree/master/docs/TipsAndTricks)
+directory of the `docs` directory of this repository has a number of
+tips and tricks that have been used to identify the changes required
+to get pdf2htmlEX compiling with a new version of poppler.
+
 ### Getting the changes back to your working repository
 
 While you do have a clone of your development pdf2htmlEX git repository,
