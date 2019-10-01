@@ -13,6 +13,12 @@ instance:
 
   https://cloud-images.ubuntu.com/locator/ec2/
 
+OR alternatively the Debian choosers:
+
+  https://wiki.debian.org/Cloud/AmazonEC2Image
+  https://wiki.debian.org/Cloud/AmazonEC2Image/Buster
+  https://wiki.debian.org/Cloud/AmazonEC2Image/Stretch
+
 THEN edit the file `hostEnvs` to ensure the aws0, aws1, and/or aws2 are 
 associated with the correct *public* ip address
 
