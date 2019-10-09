@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# This bash script pings a remote AWS machine
+
+ping $AWS0_IP
