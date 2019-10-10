@@ -22,11 +22,17 @@
       git:
         repo: https://gitlab.freedesktop.org/poppler/poppler.git
         dest: /home/ubuntu/poppler
-        version: poppler-0.81.0
+        version: poppler-0.62.0
+    - name: Install fontforge git repo for compilation
+      git:
+        repo: https://github.com/fontforge/fontforge.git
+        dest: /home/ubuntu/fontforge
+        version: 20170731
     - name: Install pdf2htmlEX git repo for compilation
       git:
         repo: https://github.com/stephengaito/pdf2htmlEX.git
         dest: /home/ubuntu/pdf2html
+        version: fontforge-20170731-poppler-0.62.0-ubuntu-18.04
     - name: Install pdf2htmlEX packaging tools
       git:
         repo: https://github.com/pdf2htmlEX/buildAndPackagingTools
