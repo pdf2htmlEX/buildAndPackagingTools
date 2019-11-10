@@ -28,22 +28,13 @@
       apt:
         state: latest
         update_cache: yes
-        name:
-          # basic tools
-          - tree
-          - aptitude
-          - nginx
-          # basic build tools
-          - git
-          - pkg-config
-          - cmake
-          - make
-          - gcc
-          - g++
-          - equivs # to build a fake poppler package
-          # packages required to compile poppler
-          - libfontforge-dev
-          - libfontconfig-dev
+        name: "{{ testToolApts }}"
+    - name: Install Required Libraries
+      become: yes
+      apt:
+        state: latest
+        update_cache: yes
+        name: "{{ requiredTestLibraryApts }}"
     - name: copy test scripts
       copy:
         src: vm-files/scripts/

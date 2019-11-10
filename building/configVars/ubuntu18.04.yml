@@ -1,0 +1,104 @@
+---
+# The Ansible vars specific to the Ubuntu 18.04 (LTS) release
+
+#####################################
+# SOURCE VERSIONS
+
+# Poppler and Fontforge git source versions:
+#
+popplerVersion:   poppler-0.62.0
+fontforgeVersion: 20170731
+
+# pdf2htmlEX development branch
+# (last used branch -- which may no longer exist)
+#
+pdf2htmlEXDevRepo:
+  url:     https://github.com/stephengaito/pdf2htmlEX.git
+  version: fontforge-20170731-poppler-0.62.0-ubuntu-18.04
+
+# pdf2htmlEX buildAndPackagingTools branch/version
+#
+pdf2htmlEXBuildToolsVersion: master
+
+#####################################
+# REQUIRED LIBRARIES
+
+# The following is a list of the (top-level) libraries which 
+# poppler and pdf2htmlEX depend upon for building pdf2htmlEX
+#
+# Note that the apt package manager will automatically pull in other 
+# libraries so if you are NOT using apt you will need to recursively 
+# determine the libraries upon which these top-level libraries themselves 
+# depend.
+#
+# The current listed version is from aptitude on 2019-Nov-10
+#
+requiredDevLibraryApts:     # current version         # comments
+  - libcairo-dev            # 1.15.10-2ubuntu0.1
+  - libspiro-dev            # 1:0.5.20150702-7
+  - libpng-dev              # 1.6.34-1ubuntu0.18.04.2
+  - libjpeg-dev             # 8c-2unbuntu8            # (1.5.2-0ubuntu5.18.04.1)
+  #- libpoppler-dev         # 0.62.0-2ubuntu2.10
+  #- libpoppler-private-dev # 0.62.0-2ubuntu2.10      # header files
+  - poppler-data            # 0.4.8-2                 # ????
+  - libpango1.0-dev         # 1.40.14-1ubutnu0.1
+  - libfontforge-dev        # 1:20170731~dfsg-1
+  - liblcms2-dev            # 2.9-1ubuntu0.1
+
+# The following is a list of the (top-level) libraries which 
+# poppler depends upon for building poppler
+#
+# The current listed version is from aptitude on 2019-Nov-10
+#
+requiredTestLibraryApts:    # current version         # comments
+  - libfontforge-dev        # 1:20170731~dfsg-1
+  - libfontconfig-dev       # 2.12.6-0ubuntu2
+
+#####################################
+# BASIC TOOLS
+
+# The following is a list of the compile tools used to compile the 
+# pdf2htmlEX tool as well as build the debian package (with a few extra to 
+# make life easier as you debug the code).
+#
+compileToolApts:
+  - aptitude
+  - git
+  - pkg-config
+  - ruby
+  - cmake
+  - make
+  - gcc
+  - g++
+  - clang
+  #- clang++                 # is already in clang package
+  - clang-tidy
+  #- clang-tools
+  - equivs                   # to build a fake poppler package
+  - openjdk-8-jre-headless   # required for minimization of javascript
+  #- openjdk-11-jre-headless  # required for minimization of javascript
+  - nginx                    # helps view the result pdf2html
+  - tree                     # useful tool
+  - devscripts               # used for packagingTools
+  - debhelper                # used for packagingTools >= v0.18.0
+  - python-dev               # used for packagingTools
+
+# The following is a list of the test tools used to test the pdf2htmlEX 
+# debian archive (with a few extra to make life easier as you debug the 
+# code).
+#
+testToolApts:
+  # basic tools
+  - tree
+  - aptitude
+  - nginx
+  # basic build tools
+  - git
+  - pkg-config
+  - cmake
+  - make
+  - gcc
+  - g++
+  - equivs # to build a fake poppler package
+
+

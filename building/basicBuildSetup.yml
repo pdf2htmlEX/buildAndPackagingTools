@@ -28,37 +28,13 @@
       apt:
         state: latest
         update_cache: yes
-        name:
-          - aptitude
-          - git
-          - pkg-config
-          - ruby
-          - cmake
-          - make
-          - gcc
-          - g++
-          - clang
-          #- clang++ in clang package
-          - clang-tidy
-          #- clang-tools
-          - equivs # to build a fake poppler package
-          - libcairo-dev
-          - libspiro-dev
-          - libpng-dev
-          - libjpeg-dev
-          #- libpoppler-dev
-          #- libpoppler-private-dev # header files
-          - libpango1.0-dev
-          - libfontforge-dev
-          - poppler-data
-          - liblcms2-dev
-          - openjdk-8-jre-headless  # required for minimization of javascript
-          #- openjdk-11-jre-headless  # required for minimization of javascript
-          - nginx                    # helps view the result pdf2html 
-          - tree                     # useful tool
-          - devscripts               # used for packagingTools
-          - debhelper                # used for packagingTools >= v0.18.0
-          - python-dev               # used for packagingTools
+        name: "{{ compileToolApts }}"
+    - name: Install Required Libraries
+      become: yes
+      apt:
+        state: latest
+        update_cache: yes
+        name: "{{ requiredDevLibraryApts }}"
     - name: copy test scripts
       copy:
         src: vm-files/scripts/

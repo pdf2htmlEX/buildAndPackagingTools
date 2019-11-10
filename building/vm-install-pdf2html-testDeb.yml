@@ -25,5 +25,5 @@
       git:
         repo: https://gitlab.freedesktop.org/poppler/poppler.git
         dest: poppler
-        version: poppler-0.81.0
+        version: "{{ popplerVersion }}"
 
