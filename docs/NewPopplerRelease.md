@@ -3,7 +3,6 @@
 Table of Contents
 =================
 
-* [Updating pdf2htmlEX to a new poppler release](#updating-pdf2htmlex-to-a-new-poppler-release)
   * [Copy 3rdparty/poppler/git files](#copy-3rdpartypopplergit-files)
   * [Review changes](#review-changes)
   * [Renaming config.h files](#renaming-configh-files)
