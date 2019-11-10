@@ -17,13 +17,13 @@
 - import_playbook: basicTestSetup.yml
 
 - name: Setup and install poppler repos for compilation
-  hosts: compileServers
-  remote_user: ubuntu
+  hosts: all
+  remote_user: "{{ lookup('env', 'VIRTUAL_MACHINE_USER') }}"
   gather_facts: no
   tasks:
     - name: Install poppler git repo for compilation
       git:
         repo: https://gitlab.freedesktop.org/poppler/poppler.git
-        dest: /home/ubuntu/poppler
+        dest: poppler
         version: poppler-0.81.0
 

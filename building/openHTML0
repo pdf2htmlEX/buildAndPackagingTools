@@ -1,9 +1,0 @@
-#!/bin/bash
-
-# This bash script opens the pdf2htmlEX test websites on aws0
-
-xdg-open http://$AWS0_IP/testrevelatornl/testrevelatornl.html
-
-xdg-open http://$AWS0_IP/joyLoL/joyLoL.html
-
-

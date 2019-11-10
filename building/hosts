@@ -1,7 +1,0 @@
-[local]
-localhost
-
-[compileServers]
-aws0
-aws1
-aws2

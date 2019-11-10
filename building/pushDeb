@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# This bash script scp's the deb archive from the remote machine
+
+if [ "$#" -ne 2 ]; then
+  echo "usage: $0 <<ipAddress>> <<path to deb archive>>"
+  exit -1
+fi
+
+ipaddress="$(cut -d'/' -f1 <<<$1)"
+
+scp -i $VIRTUAL_MACHINE_SSH_KEY $2 $VIRTUAL_MACHINE_USER@$ipaddress:.
+

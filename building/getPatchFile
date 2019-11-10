@@ -2,7 +2,16 @@
 
 # This bash script scp's a patch file from the remote machine
 
-scp -i $ANSIBLE_SSH_KEY ubuntu@$AWS0_IP:pdf2html/patchFile patches
+if [ "$#" -ne 1 ]; then
+  echo "usage: $0 <<ipAddress>>"
+  exit -1
+fi
+
+ipaddress="$(cut -d'/' -f1 <<<$1)"
+
+scp -i $VIRTUAL_MACHINE_SSH_KEY                       \
+  $VIRTUAL_MACHINE_USER@$ipaddress:pdf2html/patchFile \
+  patches
 
 echo "NOW rename the tmp/patchFile to describe"
 echo "   what date it was created on, and"

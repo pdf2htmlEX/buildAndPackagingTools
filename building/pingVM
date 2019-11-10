@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# This bash script pings a remote virtual machine
+
+if [ "$#" -ne 1 ]; then
+  echo "usage: $0 <<ipAddress>>"
+  exit -1
+fi
+
+ipaddress="$(cut -d'/' -f1 <<<$1)"
+
+ping $ipaddress

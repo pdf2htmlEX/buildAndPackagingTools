@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# This bash script automates the login to a remote AWS machine
+
+if [ "$#" -ne 1 ]; then
+  echo "usage: $0 <<ipAddress>>"
+  exit -1
+fi
+
+ipaddress="$(cut -d'/' -f1 <<<$1)"
+
+if ssh-add -L | grep -q $VIRTUAL_MACHINE_SSH_KEY ; then
+  echo "already added $VIRTUAL_MACHINE_SSH_KEY"
+else
+  ssh-add $VIRTUAL_MACHINE_SSH_KEY
+fi
+
+ssh-keygen -R $ipaddress
+
+ssh -i $VIRTUAL_MACHINE_SSH_KEY $VIRTUAL_MACHINE_USER@$ipaddress

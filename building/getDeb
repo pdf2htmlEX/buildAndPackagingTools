@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# This bash script scp's the deb archive from the remote machine
+
+if [ "$#" -ne 2 ]; then
+  echo "usage: $0 <<ipAddress>> <<deb archive name>>"
+  exit -1
+fi
+
+ipaddress="$(cut -d'/' -f1 <<<$1)"
+
+mkdir -p tmp
+
+scp -i $VIRTUAL_MACHINE_SSH_KEY                  \
+  $VIRTUAL_MACHINE_USER@$ipaddress:build-area/$2 \
+  tmp
+
+scp -i $VIRTUAL_MACHINE_SSH_KEY                              \
+  $VIRTUAL_MACHINE_USER@$ipaddress:pdf2html/debian/changelog \
+  ../packaging/debian/changelog
+
+cd tmp
+
+md5sum $2 > $2.md5
+sha256sum $2 > $2.sha256

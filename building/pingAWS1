@@ -1,5 +1,0 @@
-#!/bin/bash
-
-# This bash script pings a remote AWS machine
-
-ping $AWS1_IP

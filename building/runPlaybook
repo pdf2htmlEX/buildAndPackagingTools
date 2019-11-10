@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# This bash script automates the running of an Ansible playbook on a
+# virtual machine at the specified ip address
+
+if [ "$#" -ne 3 ]; then
+  echo ""
+  echo "usage: $0 <<ipAddress>> <<vars file>> <<playbook>>"
+  echo ""
+  echo "where: "
+  echo ""
+  echo "  <<ipAddress>>"
+  echo "    is the IP Address of the virtual machine"
+  echo ""
+  echo "  <<vars file>>"
+  echo "    is a path to an Ansible Vars file"
+  echo "     containing the OS specific configuration"
+  echo ""
+  echo "  <<playbook>>"
+  echo "    is a path to an Ansible playbook file"
+  echo ""
+  exit -1
+fi
+
+ipaddress="$(cut -d'/' -f1 <<<$1)"
+
+ansible-playbook -i $ipaddress,       \
+  --key-file $VIRTUAL_MACHINE_SSH_KEY \
+  --extra-vars "@$2"                  \
+  $3

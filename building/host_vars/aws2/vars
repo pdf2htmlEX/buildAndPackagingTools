@@ -1,4 +1,0 @@
----
-# Variables specific to aws2
-
-ansible_host: "{{ lookup('env', 'AWS2_IP') }}"

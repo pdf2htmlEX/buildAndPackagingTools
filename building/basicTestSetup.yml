@@ -9,8 +9,8 @@
 # and: https://www.linuxschoolonline.com/use-ansible-to-build-and-manage-aws-ec2-instances/
 
 - name: Setup and install basic tools
-  hosts: compileServers
-  remote_user: ubuntu
+  hosts: all
+  remote_user: "{{ lookup('env', 'VIRTUAL_MACHINE_USER') }}"
   gather_facts: no
   pre_tasks:
     - name: 'install python'
@@ -46,10 +46,10 @@
           - libfontconfig-dev
     - name: copy test scripts
       copy:
-        src: awsEC2/scripts/
+        src: vm-files/scripts/
         dest: .
         mode: a+x
     - name: copy simple test PDF files
       copy:
-        src: awsEC2/files/
+        src: vm-files/files/
         dest: .
