@@ -3,19 +3,19 @@
 Table of Contents
 =================
 
-   * [Updating pdf2htmlEX to a new poppler release](#updating-pdf2htmlex-to-a-new-poppler-release)
-         * [Copy 3rdparty/poppler/git files](#copy-3rdpartypopplergit-files)
-         * [Review changes](#review-changes)
-         * [Renaming config.h files](#renaming-configh-files)
-         * [Testing the build of pdf2htmlEX](#testing-the-build-of-pdf2htmlex)
-         * [Hacking the pdf2htmlEX sources](#hacking-the-pdf2htmlex-sources)
-         * [Getting the changes back to your working repository](#getting-the-changes-back-to-your-working-repository)
-         * [Going round the loop](#going-round-the-loop)
-         * [Once you have compiling code](#once-you-have-compiling-code)
-         * [Creating a Debian package.](#creating-a-debian-package)
-         * [Testing a debian archive](#testing-a-debian-archive)
-         * [Releasing a new pdf2htmlEX version](#releasing-a-new-pdf2htmlex-version)
-         * [You are now done!](#you-are-now-done)
+* [Updating pdf2htmlEX to a new poppler release](#updating-pdf2htmlex-to-a-new-poppler-release)
+  * [Copy 3rdparty/poppler/git files](#copy-3rdpartypopplergit-files)
+  * [Review changes](#review-changes)
+  * [Renaming config.h files](#renaming-configh-files)
+  * [Testing the build of pdf2htmlEX](#testing-the-build-of-pdf2htmlex)
+  * [Hacking the pdf2htmlEX sources](#hacking-the-pdf2htmlex-sources)
+  * [Getting the changes back to your working repository](#getting-the-changes-back-to-your-working-repository)
+  * [Going round the loop](#going-round-the-loop)
+  * [Once you have compiling code](#once-you-have-compiling-code)
+  * [Creating a Debian package.](#creating-a-debian-package)
+  * [Testing a debian archive](#testing-a-debian-archive)
+  * [Releasing a new pdf2htmlEX version](#releasing-a-new-pdf2htmlex-version)
+  * [You are now done!](#you-are-now-done)
 
 Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
 
