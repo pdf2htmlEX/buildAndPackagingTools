@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# This bash script scp's an arbitrary file from the remote machine
+
+if [ "$#" -ne 2 ]; then
+  echo "usage: $0 <<ipAddress>> <<path to file on remote machine>>"
+  exit -1
+fi
+
+ipaddress="$(cut -d'/' -f1 <<<$1)"
+
+mkdir -p tmp
+
+scp -i $VIRTUAL_MACHINE_SSH_KEY       \
+  $VIRTUAL_MACHINE_USER@$ipaddress:$2 \
+  tmp
