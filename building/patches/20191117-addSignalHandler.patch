@@ -1,0 +1,624 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index f2b04e9..9056285 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -149,6 +149,8 @@ set(PDF2HTMLEX_SRC ${PDF2HTMLEX_SRC}
+     src/util/unicode.cc
+     src/util/mingw.h
+     src/util/mingw.cc
++    src/util/SignalHandler.h
++    src/util/SignalHandler.cc
+     src/ArgParser.h
+     src/ArgParser.cc
+     src/Base64Stream.h
+diff --git a/src/pdf2htmlEX.cc b/src/pdf2htmlEX.cc
+index 3bd35e6..b590cca 100644
+--- a/src/pdf2htmlEX.cc
++++ b/src/pdf2htmlEX.cc
+@@ -25,6 +25,8 @@
+ 
+ #include "pdf2htmlEX-config.h"
+ 
++#include "util/SignalHandler.h"
++
+ #if ENABLE_SVG
+ #include <cairo.h>
+ #endif
+@@ -55,11 +57,15 @@ void show_usage_and_exit(const char * dummy = nullptr)
+ 
+ void show_version_and_exit(const char * dummy = nullptr)
+ {
++    const FFWVersionInfo* ffwVersionInfo = ffw_get_version_info();
++
+     cerr << "pdf2htmlEX version " << PDF2HTMLEX_VERSION << endl;
+     cerr << "Copyright 2012-2015 Lu Wang <coolwanglu@gmail.com> and other contributors" << endl;
+     cerr << "Libraries: " << endl;
+     cerr << "  poppler " << POPPLER_VERSION << endl;
+-    cerr << "  libfontforge " << ffw_get_version() << endl;
++    cerr << "  libfontforge " << ffwVersionInfo->majorVersion << "." <<
++      ffwVersionInfo->minorVersion << "." << ffwVersionInfo->gitVersion << endl;
++    cerr << "  libfontforge (date) " << ffwVersionInfo->versionDate << endl;
+ #if ENABLE_SVG
+     cerr << "  cairo " << cairo_version_string() << endl;
+ #endif
+@@ -387,6 +393,12 @@ int main(int argc, char **argv)
+         exit(EXIT_FAILURE);
+     }
+ 
++    // setup the signal handler
++    setupSignalHandler(argc, (const char**)argv,
++      param.data_dir.c_str(),
++      param.poppler_data_dir.c_str(),
++      param.tmp_dir.c_str());
++
+     bool finished = false;
+     // read config file
+     globalParams = new GlobalParams(!param.poppler_data_dir.empty() ? param.poppler_data_dir.c_str() : NULL);
+diff --git a/src/util/SignalHandler.cc b/src/util/SignalHandler.cc
+index e69de29..c19eedc 100644
+--- a/src/util/SignalHandler.cc
++++ b/src/util/SignalHandler.cc
+@@ -0,0 +1,220 @@
++/*
++ * SignalHandler.cc
++ *
++ *  Created on: 2019-Nov-14
++ *      Author: Stephen Gaito
++ */
++
++/**********
++
++This collection of basic ANSI-C functions implement a crude SIG-SEGV
++handler for when things go horribly wrong ;-(
++
++We implement them in as simple a maner as possible so that it will be as
++portable as possible and less likely to fall into a reentrant deadlock.
++
++At the moment the most critical SIG-SEGVs are happening inside the
++FontForge library. So we start by focusing upon adding more helpful
++messages when FontForge can't save a file for us.
++
++**********/
++
++
++#include <stdio.h>
++#include <string.h>
++#include <string>
++#include <unistd.h>
++#include <signal.h>
++
++#include "pdf2htmlEX-config.h"
++#include "util/ffw.h"
++#include <cairo/cairo.h>
++#include <poppler/poppler-config.h>
++
++const char* oopsMessage  =
++  "\n"
++  "\n"
++  "Oops! Something went horribly wrong.... sorry!\n"
++  "\n";
++
++const char* ffwMessage_1 =
++  "I was in the middle of asking FontForge to ";
++
++const char* ffwMessage_2 =
++  " a font.\n"
++  "\n"
++  "I suspect that the problem is that FontForge is having trouble\n"
++  "working with one of the fonts embedded in your pdf file.\n"
++  "\n"
++  "The best way to verify this is to install FontForge and to try\n"
++  "loading and then (re)generating each font in the\n"
++  "\n"
++  "    ";
++
++const char* ffwMessage_3 =
++  "\n"
++  "\n"
++  "directory. See:\n"
++  "\n"
++  "    https://github.com/pdf2htmlEX/pdf2htmlEX/wiki/Troubleshooting-Crashes\n"
++  "\n"
++  "for details.\n"
++  "\n"
++  "If one of these fonts crashes FontForge, then it is certainly not a\n"
++  "pdf2htmlEX problem.... sorry.\n"
++  "\n"
++  "IF it *is* a FontForge problem then you have the following options:\n"
++  "\n"
++  "  1) You can send a copy of the font you found which crashed FontForge to\n"
++  "     the FontForge developers and see if they can find the problem.\n"
++  "     (Be warned FontForge is a complex application, so it might be\n"
++  "      very hard for the developers to isolate your problem.... )\n"
++  "\n"
++  "  2) You can try re-creating your PDF with a different font.\n"
++  "\n"
++  "  3) Or you can do both of these things...\n"
++  "\n"
++  "IF you were not able to crash FontForge using the fonts in the above\n"
++  "directory... then and only then please raise an issue with the pdf2htmlEX\n"
++  "team... make sure you provide them with your pdf, as well as the following\n"
++  "details:\n";
++
++const char* noFfwMessage =
++  "Please raise an issue with the pdf2hmtlEX team so they can fix this...\n"
++  "\n"
++  "Please make sure you provide them with your pdf as well as the following\n"
++  "details:\n";
++
++const char* detailsHeader =
++  "\n"
++  "--------------------------------------------------------------------------\n"
++  "\n";
++
++const char* detailsBody = "no details recorded\n";
++
++const char* pdf2htmlEXTmpDir = NULL;
++const char* ffwAction        = NULL;
++
++struct sigaction act;
++
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wunused-result" 
++void signalHandler(int sigInt) {
++  write(STDERR_FILENO, oopsMessage,        strlen(oopsMessage) );
++
++  if (ffwAction) {
++    write(STDERR_FILENO, ffwMessage_1,     strlen(ffwMessage_1) );
++    write(STDERR_FILENO, ffwAction,        strlen(ffwAction) );
++    write(STDERR_FILENO, ffwMessage_2,     strlen(ffwMessage_2) );
++    write(STDERR_FILENO, pdf2htmlEXTmpDir, strlen(pdf2htmlEXTmpDir) );
++    write(STDERR_FILENO, ffwMessage_3,     strlen(ffwMessage_3) );
++  } else {
++    write(STDERR_FILENO, noFfwMessage,     strlen(noFfwMessage) );
++  }
++
++  write(STDERR_FILENO, detailsHeader,      strlen(detailsHeader) );
++  write(STDERR_FILENO, detailsBody,        strlen(detailsBody) );
++  exit(-1);
++
++}
++#pragma GCC diagnostic pop
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++void ffwSetAction(const char* anAction) {    ffwAction = anAction; }
++void ffwClearAction(const char* anAction) {  ffwAction = NULL; }
++
++#ifdef __cplusplus
++}
++#endif
++
++void setupSignalHandler(
++  int argc, const char* argv[],
++  const char* data_dir,
++  const char* poppler_data_dir,
++  const char* tmp_dir) {
++  // THIS MUST BE CALLED AFTER ARGUMENT PARSING
++
++  // Start by setting up the messages
++  //
++  // Construct the command line information
++  std::string detailInfo;
++  detailInfo = "Command line:\n";
++  for (int i = 0 ; i < argc ; i++ ){
++    detailInfo = detailInfo + "  " + std::to_string(i) + ": [" + argv[i] + "]\n" ;
++  }
++  detailInfo = detailInfo + "\n";
++
++  // Construct the version information
++  const pdf2htmlEX::FFWVersionInfo* ffwVersionInfo =
++    pdf2htmlEX::ffw_get_version_info();
++
++  detailInfo = detailInfo + "Version information:\n";
++  detailInfo = detailInfo + "  pdf2htmlEX version " + pdf2htmlEX::PDF2HTMLEX_VERSION + "\n";
++  detailInfo = detailInfo + "  Copyright 2012-2015 Lu Wang <coolwanglu@gmail.com> and other contributors\n";
++  detailInfo = detailInfo + "\n";
++  detailInfo = detailInfo + "Libraries:\n" ;
++  detailInfo = detailInfo + "  poppler " + POPPLER_VERSION + "\n";
++  detailInfo = detailInfo + "  libfontforge " + ffwVersionInfo->majorVersion + "." + ffwVersionInfo->minorVersion + "." + ffwVersionInfo->gitVersion + "\n";
++  detailInfo = detailInfo + "  libfontforge (date) " + ffwVersionInfo->versionDate + "\n";
++#if ENABLE_SVG
++  detailInfo = detailInfo + "  cairo " + cairo_version_string() + "\n";
++#endif
++  detailInfo = detailInfo + "\n";
++  detailInfo = detailInfo + "Default data-dir: " + data_dir + "\n";
++  detailInfo = detailInfo + "Default poppler-data-dir: " + poppler_data_dir + "\n";
++  detailInfo = detailInfo + "Default tmp-dir: " + tmp_dir + "\n";
++  detailInfo = detailInfo + "\n";
++  detailInfo = detailInfo + "Supported image formats:";
++#ifdef ENABLE_LIBPNG
++  detailInfo = detailInfo + " png";
++#endif
++#ifdef ENABLE_LIBJPEG
++  detailInfo = detailInfo + " jpg";
++#endif
++#if ENABLE_SVG
++  detailInfo = detailInfo + " svg";
++#endif
++  detailInfo = detailInfo + "\n\n";
++
++  detailsBody = strdup(detailInfo.c_str());
++
++  pdf2htmlEXTmpDir = strdup(tmp_dir);
++
++  // Now setup the signal handler
++  //
++  memset(&act, 0, sizeof(act));
++  act.sa_handler = signalHandler;
++  //
++  sigaction(SIGILL,  &act, NULL);  // Illegal Instruction
++  sigaction(SIGFPE,  &act, NULL);  // Floating-point exception
++  sigaction(SIGSEGV, &act, NULL);  // Invalid memory reference
++  sigaction(SIGBUS,  &act, NULL);  // Bus error (bad memory access)
++  sigaction(SIGSYS,  &act, NULL);  // Bad system call (SVr4)
++
++  // All done
++}
++
++
++/***
++int main(int argc, const char* argv[]) {
++
++  setupSignalHandler(argc, argv, "aTmpDir");
++
++  ffwSetAction("save");
++
++  for (int i = 0; i < 5; i++) {
++    printf("sleeping.... \n");
++    sleep(1);
++  }
++
++  int *foo = NULL;
++
++  *foo = 1;
++
++  printf("We should not reach here!\n");
++
++}
++***/
+diff --git a/src/util/SignalHandler.h b/src/util/SignalHandler.h
+index e69de29..d39b844 100644
+--- a/src/util/SignalHandler.h
++++ b/src/util/SignalHandler.h
+@@ -0,0 +1,21 @@
++#ifndef SIGNAL_HANDLER_H
++#define SIGNAL_HANDLER_H
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++void ffwSetAction(const char* anAction);
++void ffwClearAction(void);
++
++#ifdef __cplusplus
++}
++#endif
++
++void setupSignalHandler(
++  int argc, const char* argv[],
++  const char* data_dir,
++  const char* poppler_data_dir,
++  const char* tmp_dir);
++
++#endif
+diff --git a/src/util/ffw.c b/src/util/ffw.c
+index ccd2643..9856adb 100644
+--- a/src/util/ffw.c
++++ b/src/util/ffw.c
+@@ -16,6 +16,8 @@
+ #include <fontforge.h>
+ #include <baseviews.h>
+ 
++#include "SignalHandler.h"
++
+ #include "ffw.h"
+ #include "fontforge-2.0.20170731/autowidth.h"
+ #include "fontforge-2.0.20170731/bitmapchar.h"
+@@ -66,6 +68,7 @@ static void dumb_post_error(const char * title, const char * error, ...) { }
+ 
+ void ffw_init(int debug)
+ {
++    ffwSetAction("initialize");
+     InitSimpleStuff();
+     if ( default_encoding==NULL )
+         default_encoding=FindOrMakeEncoding("ISO8859-1");
+@@ -88,10 +91,12 @@ void ffw_init(int debug)
+         v.u.ival = 1;
+         SetPrefs("DetectDiagonalStems", &v, NULL);
+     }
++    ffwClearAction();
+ }
+ 
+ void ffw_finalize(void)
+ {
++    ffwSetAction("finalize");
+     while(enc_head)
+     {
+         Encoding * next = enc_head->next;
+@@ -107,21 +112,36 @@ void ffw_finalize(void)
+         free(enc_head);
+         enc_head = next;
+     }
++    ffwClearAction();
+ }
+ 
+-long ffw_get_version(void)
++// see: https://stackoverflow.com/a/2653351
++#define xstr(a) str(a)
++#define str(a) #a
++
++static FFWVersionInfo ffwVersionInfo;
++
++const FFWVersionInfo* ffw_get_version_info(void)
+ {
+-    return FONTFORGE_VERSIONDATE_RAW;
++    ffwVersionInfo.gitVersion   = FONTFORGE_GIT_VERSION;
++    ffwVersionInfo.majorVersion = xstr(FONTFORGE_VERSION_MAJOR);
++    ffwVersionInfo.minorVersion = xstr(FONTFORGE_VERSION_MINOR);
++    ffwVersionInfo.versionDate  = FONTFORGE_VERSIONDATE;
++
++    return &ffwVersionInfo;
+ }
+ 
+ void ffw_new_font()
+ {
++    ffwSetAction("create");
+     assert((cur_fv == NULL) && "Previous font is not destroyed");
+     cur_fv = FVAppend(_FontViewCreate(SplineFontNew()));
++    ffwClearAction();
+ }
+ 
+ void ffw_load_font(const char * filename)
+ {
++    ffwSetAction("load");
+     assert((cur_fv == NULL) && "Previous font is not destroyed");
+ 
+     char * _filename = strcopy(filename);
+@@ -147,6 +167,7 @@ void ffw_load_font(const char * filename)
+         cur_fv->cidmaster->ascent = cur_fv->sf->ascent;
+         cur_fv->cidmaster->descent = cur_fv->sf->descent;
+     }
++    ffwClearAction();
+ }
+ 
+ /*
+@@ -154,6 +175,7 @@ void ffw_load_font(const char * filename)
+  */
+ void ffw_prepare_font(void)
+ {
++    ffwSetAction("prepare");
+     memset(cur_fv->selected, 1, cur_fv->map->enccount);
+     // remove kern
+     FVRemoveKerns(cur_fv);
+@@ -185,10 +207,12 @@ void ffw_prepare_font(void)
+      */
+     free(sf->fontname);
+     sf->fontname = strcopy("");
++    ffwClearAction();
+ }
+ 
+ void ffw_save(const char * filename)
+ {
++    ffwSetAction("save");
+     char * _filename = strcopy(filename);
+     char * _ = strcopy("");
+ 
+@@ -200,11 +224,14 @@ void ffw_save(const char * filename)
+ 
+     if(!r)
+         err("Cannot save font to %s\n", filename);
++    ffwClearAction();
+ }
+ void ffw_close(void)
+ {
++    ffwSetAction("close");
+     FontViewClose(cur_fv);
+     cur_fv = NULL;
++    ffwClearAction();
+ }
+ 
+ static void ffw_do_reencode(Encoding * encoding, int force)
+@@ -234,25 +261,32 @@ static void ffw_do_reencode(Encoding * encoding, int force)
+ 
+ void ffw_reencode_glyph_order(void)
+ {
++    ffwSetAction("re-encode the glyph order in");
+     ffw_do_reencode(original_enc, 0);
++    ffwClearAction();
+ }
+ 
+ void ffw_reencode_unicode_full(void)
+ {
++    ffwSetAction("re-encode to unicode");
+     ffw_do_reencode(unicodefull_enc, 0);
++    ffwClearAction();
+ }
+ 
+ void ffw_reencode(const char * encname, int force)
+ {
++    ffwSetAction("re-encode");
+     Encoding * enc = FindOrMakeEncoding(encname);
+     if(!enc)
+         err("Unknown encoding %s\n", encname);
+ 
+     ffw_do_reencode(enc, force);
++    ffwClearAction();
+ }
+ 
+ void ffw_reencode_raw(int32 * mapping, int mapping_len, int force)
+ {
++    ffwSetAction("re-encode (raw1)");
+     Encoding * enc = calloc(1, sizeof(Encoding));
+     enc->only_1byte = enc->has_1byte = true;
+ 
+@@ -273,10 +307,12 @@ void ffw_reencode_raw(int32 * mapping, int mapping_len, int force)
+     enc_head = enc;
+ 
+     ffw_do_reencode(enc, force);
++    ffwClearAction();
+ }
+ 
+ void ffw_reencode_raw2(char ** mapping, int mapping_len, int force)
+ {
++    ffwSetAction("re-encode (raw2)");
+     Encoding * enc = calloc(1, sizeof(Encoding));
+     enc->enc_name = strcopy("");
+     enc->char_cnt = mapping_len;
+@@ -300,6 +336,7 @@ void ffw_reencode_raw2(char ** mapping, int mapping_len, int force)
+     enc_head = enc;
+ 
+     ffw_do_reencode(enc, force);
++    ffwClearAction();
+ }
+ 
+ void ffw_cidflatten(void)
+@@ -309,7 +346,9 @@ void ffw_cidflatten(void)
+         fprintf(stderr, "Cannot flatten a non-CID font\n");
+         return;
+     }
++    ffwSetAction("flatten the cid in");
+     SFFlatten(cur_fv->sf->cidmaster);
++    ffwClearAction();
+ }
+ 
+ /*
+@@ -318,6 +357,7 @@ void ffw_cidflatten(void)
+  */
+ void ffw_add_empty_char(int32_t unicode, int width)
+ {
++    ffwSetAction("add an empty character to");
+     SplineChar * sc = SFMakeChar(cur_fv->sf, cur_fv->map, cur_fv->map->enccount);
+     char buffer[400];
+     SCSetMetaData(sc,
+@@ -325,22 +365,29 @@ void ffw_add_empty_char(int32_t unicode, int width)
+                 cur_fv->sf->uni_interp, cur_fv->sf->for_new_glyphs)),
+         unicode, sc->comment);
+     SCSynchronizeWidth(sc, width, sc->width, cur_fv);
++    ffwClearAction();
+ }
+ 
+ int ffw_get_em_size(void)
+ {
+-    return cur_fv->sf->ascent + cur_fv->sf->descent;
++    ffwSetAction("get the em size of");
++    int emSize = cur_fv->sf->ascent + cur_fv->sf->descent;
++    ffwClearAction();
++    return emSize;
+ }
+ 
+ void ffw_fix_metric()
+ {
++    ffwSetAction("fix the metric of");
+     double ascent, descent;
+     ffw_get_metric(&ascent, &descent);
+     ffw_set_metric(ascent, descent);
++    ffwClearAction();
+ }
+ 
+ void ffw_get_metric(double * ascent, double * descent)
+ {
++    ffwSetAction("get the metric of");
+     SplineFont * sf = cur_fv->sf;
+ 
+     DBounds bb;
+@@ -357,10 +404,12 @@ void ffw_get_metric(double * ascent, double * descent)
+     {
+         *ascent = *descent = 0;
+     }
++    ffwClearAction();
+ }
+ 
+ void ffw_set_metric(double ascent, double descent)
+ {
++    ffwSetAction("set the metric of");
+     SplineFont * sf = cur_fv->sf;
+     struct pfminfo * info = &sf->pfminfo;
+ 
+@@ -402,6 +451,7 @@ void ffw_set_metric(double ascent, double descent)
+ 
+     info->os2_typolinegap = 0;
+     info->linegap = 0;
++    ffwClearAction();
+ }
+ 
+ /*
+@@ -410,6 +460,7 @@ void ffw_set_metric(double ascent, double descent)
+ void ffw_set_widths(int * width_list, int mapping_len,
+         int stretch_narrow, int squeeze_wide)
+ {
++    ffwSetAction("set the widths of");
+     SplineFont * sf = cur_fv->sf;
+ 
+     if(sf->onlybitmaps
+@@ -453,13 +504,17 @@ void ffw_set_widths(int * width_list, int mapping_len,
+ 
+         SCSynchronizeWidth(sc, width_list[i], sc->width, cur_fv);
+     }
++    ffwClearAction();
+ }
+ 
+ void ffw_import_svg_glyph(int code, const char * filename, double ox, double oy, double width)
+ {
++    ffwSetAction("import the glyphs from");
+     int enc = SFFindSlot(cur_fv->sf, cur_fv->map, code, "");
+-    if(enc == -1)
++    if(enc == -1) {
++        ffwClearAction();
+         return;
++    }
+ 
+     SplineChar * sc = SFMakeChar(cur_fv->sf, cur_fv->map, enc);
+ 
+@@ -483,10 +538,12 @@ void ffw_import_svg_glyph(int code, const char * filename, double ox, double oy,
+ 
+         SCSynchronizeWidth(sc, floor(width * (a+d) + 0.5), sc->width, cur_fv);
+     }
++    ffwClearAction();
+ }
+ 
+ void ffw_auto_hint(void)
+ {
++    ffwSetAction("automatically hint");
+     // convert to quadratic
+     if(!(cur_fv->sf->layers[ly_fore].order2))
+     {
+@@ -496,11 +553,14 @@ void ffw_auto_hint(void)
+     memset(cur_fv->selected, 1, cur_fv->map->enccount);
+     FVAutoHint(cur_fv);
+     FVAutoInstr(cur_fv);
++    ffwClearAction();
+ }
+ 
+ void ffw_override_fstype(void)
+ {
++    ffwSetAction("override the fstype of");
+     *(int16 *)(&cur_fv->sf->pfminfo.fstype) = 0;
+     cur_fv->sf->pfminfo.pfmset = true;
+     cur_fv->sf->changed = true;
++    ffwClearAction();
+ }
+diff --git a/src/util/ffw.h b/src/util/ffw.h
+index a01ed79..18f0e2e 100644
+--- a/src/util/ffw.h
++++ b/src/util/ffw.h
+@@ -23,7 +23,15 @@ extern "C" {
+ // global
+ void ffw_init(int debug);
+ void ffw_finalize(void);
+-long ffw_get_version(void);
++
++typedef struct ffw_version_info {
++  const char* gitVersion;
++  const char* majorVersion;
++  const char* minorVersion;
++  const char* versionDate;
++} FFWVersionInfo ;
++
++const FFWVersionInfo* ffw_get_version_info(void);
+ 
+ ////////////////////////
+ // load & save
