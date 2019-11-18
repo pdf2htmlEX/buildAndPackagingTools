@@ -22,3 +22,8 @@
 
 * Issue #43 how to patch fontforge to prevent it writing the current time 
   into the dumped fonts
+
+# Patches
+
+* update the details in signal handler patch to include which ffw_ method 
+  was last called.
